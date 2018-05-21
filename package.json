@@ -1,6 +1,6 @@
 {
   "name": "grapevine-config",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Container Linux configuration for Grapevine, and related server units.",
   "repository": "git@github.com:steven-xie/grapevine-config",
   "author": "Steven Xie <hello@stevenxie.me>",

@@ -1,0 +1,85 @@
+{
+  "ignition": {
+    "config": {
+      "replace": {
+        "source":
+          "https://raw.githubusercontent.com/steven-xie/grapevine-config/master/out/ignition-config.json",
+        "verification": {}
+      }
+    },
+    "timeouts": {
+      "httpResponseHeaders": 10,
+      "httpTotal": 30
+    },
+    "version": "2.1.0"
+  },
+  "networkd": {},
+  "passwd": {
+    "users": [
+      {
+        "groups": ["sudo", "docker"],
+        "name": "dev",
+        "passwordHash":
+          "$6$rounds=8192$HFQfsOK6siMlQ$rCYooCVQ/czao7YNidDDIIWWmIMe7QtW7rq1HJUXC0BWDmeepjzV/.gTiM.ElD3yV2e7kGf.9aF3KnGdPMzoB.",
+        "primaryGroup": "users",
+        "sshAuthorizedKeys": [
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL6DIQ+E+sAaDni3VJlnxDJp6LF0s1r6SmbU6P1YMHtQ stevenxie"
+        ]
+      }
+    ]
+  },
+  "storage": {
+    "files": [
+      {
+        "filesystem": "root",
+        "group": {},
+        "path": "/etc/ssh/sshd_config",
+        "user": {},
+        "contents": {
+          "source":
+            "data:,UsePrivilegeSeparation%20sandbox%0ASubsystem%20sftp%20internal-sftp%0AClientAliveInterval%20180%0AUseDNS%20no%0AUsePAM%20no%0A%0APermitRootLogin%20no%0AAllowUsers%20core%20dev%0AAuthenticationMethods%20publickey%0APrintMotd%20no%0A",
+          "verification": {}
+        },
+        "mode": 384
+      },
+      {
+        "filesystem": "root",
+        "group": {},
+        "path": "/var/lib/iptables/rules-save",
+        "user": {},
+        "contents": {
+          "source":
+            "data:,*filter%0A%3AINPUT%20DROP%20%5B0%3A0%5D%0A%3AFORWARD%20DROP%20%5B0%3A0%5D%0A%3AOUTPUT%20ACCEPT%20%5B0%3A0%5D%0A-A%20INPUT%20-i%20lo%20-j%20ACCEPT%0A-A%20INPUT%20-i%20eth1%20-j%20ACCEPT%0A-A%20INPUT%20-m%20conntrack%20--ctstate%20RELATED%2CESTABLISHED%20-j%20ACCEPT%0A-A%20INPUT%20-p%20tcp%20-m%20tcp%20--dport%2022%20-j%20ACCEPT%0A-A%20INPUT%20-p%20tcp%20-m%20tcp%20--dport%2080%20-j%20ACCEPT%0A-A%20INPUT%20-p%20tcp%20-m%20tcp%20--dport%20443%20-j%20ACCEPT%0A-A%20INPUT%20-p%20icmp%20-m%20icmp%20--icmp-type%200%20-j%20ACCEPT%0A-A%20INPUT%20-p%20icmp%20-m%20icmp%20--icmp-type%203%20-j%20ACCEPT%0A-A%20INPUT%20-p%20icmp%20-m%20icmp%20--icmp-type%2011%20-j%20ACCEPT%0ACOMMIT%0A",
+          "verification": {}
+        },
+        "mode": 420
+      },
+      {
+        "filesystem": "root",
+        "group": {},
+        "path": "/etc/coreos/update.conf",
+        "user": {},
+        "contents": {
+          "source":
+            "data:,GROUP%3Dbeta%0ASERVER%3Dhttps%3A%2F%2Fpublic.update.core-os.net%2Fv1%2Fupdate%2F",
+          "verification": {}
+        },
+        "mode": 420
+      }
+    ]
+  },
+  "systemd": {
+    "units": [
+      {
+        "contents":
+          "[Unit]\nDescription=Docker Compose installer\nAfter=system-networkd.service\nRequires=system-networkd.service\nConditionPathExists=!/opt/bin/docker-compose\n\n[Service]\nType=oneshot\nExecStartPre=-/bin/mkdir /opt \u0026\u0026 /bin/mkdir /opt/bin\nExecStart=/bin/curl -o /opt/bin/docker-compose \\\n                    -L https://github.com/docker/compose/releases/download/1.21.2/docker-compose-Linux-x86_64\nExecStartPost=/bin/chmod +x /opt/bin/docker-compose\n\n[Install]\nWantedBy=multi-user.target\n",
+        "enabled": true,
+        "name": "docker-compose-installer.service"
+      },
+      {
+        "enabled": true,
+        "name": "iptables-restore.service"
+      }
+    ]
+  }
+}
