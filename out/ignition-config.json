@@ -3,7 +3,7 @@
     "config": {
       "replace": {
         "source":
-          "https://raw.githubusercontent.com/steven-xie/grapevine-config/master/out/ignition-config.json",
+          "https://raw.githubusercontent.com/steven-xie/container-linux-config/master/out/ignition-config.json",
         "verification": {}
       }
     },

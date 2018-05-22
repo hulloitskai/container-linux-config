@@ -1,9 +1,9 @@
-#container-linux-config
+# container-linux-config
 
 ignition:
   config:
     replace:
-      source: https://raw.githubusercontent.com/steven-xie/grapevine-config/master/out/ignition-config.json
+      source: https://raw.githubusercontent.com/steven-xie/container-linux-config/master/out/ignition-config.json
   timeouts:
     http_response_headers: 10
     http_total: 30

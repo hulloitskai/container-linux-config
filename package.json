@@ -1,10 +1,16 @@
 {
-  "name": "grapevine-config",
-  "version": "0.2.1",
-  "description": "Container Linux configuration for Grapevine, and related server units.",
-  "repository": "git@github.com:steven-xie/grapevine-config",
+  "name": "container-linux-config",
+  "version": "0.2.2",
+  "description": "A basic Container Linux / Ignition configuration for CoreOS, and related distros.",
+  "homepage": "https://github.com/steven-xie/container-linux-config",
+  "repository": "git@github.com:steven-xie/container-linux-config",
+  "bugs": {
+    "url": "https://github.com/steven-xie/container-linux-config/issues",
+    "email": "dev@stevenxie.me"
+  },
+  "license": "MIT",
   "author": "Steven Xie <hello@stevenxie.me>",
-  "private": true,
+  "private": false,
   "scripts": {
     "make": "yarn mk-config && yarn prettier",
     "mk-config":
