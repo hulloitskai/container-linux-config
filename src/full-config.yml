@@ -1,0 +1,191 @@
+# container-linux-config
+
+ignition:
+  # Prevent infinite HTTP(s) resource loading
+  timeouts:
+    http_response_headers: 10
+    http_total: 30
+
+passwd:
+  users:
+    - name: dev
+      primary_group: users
+      groups: [ sudo, docker ]
+      ssh_authorized_keys:
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL6DIQ+E+sAaDni3VJlnxDJp6LF0s1r6SmbU6P1YMHtQ stevenxie
+
+storage:
+  files:
+      # Configure `sshd`, prevent password authentication
+    - path: /etc/ssh/sshd_config
+      filesystem: root
+      mode: 0600
+      contents:
+        inline: |
+          UsePrivilegeSeparation sandbox
+          Subsystem sftp internal-sftp
+          ClientAliveInterval 180
+          UseDNS no
+          UsePAM no
+
+          PermitRootLogin no
+          AllowUsers core dev
+          AuthenticationMethods publickey
+          PrintMotd no
+
+      # Restrict networking to :443, :80, :22, and internal ports
+    - path: /var/lib/iptables/rules-save
+      filesystem: root
+      mode: 0644
+      contents:
+        inline: |
+          *filter
+          :INPUT DROP [0:0]
+          :FORWARD DROP [0:0]
+          :OUTPUT ACCEPT [0:0]
+          -A INPUT -i lo -j ACCEPT
+          -A INPUT -i eth1 -j ACCEPT
+          -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+          -A INPUT -p tcp -m tcp --dport 22 -j ACCEPT
+          -A INPUT -p tcp -m tcp --dport 80 -j ACCEPT
+          -A INPUT -p tcp -m tcp --dport 443 -j ACCEPT
+          -A INPUT -p icmp -m icmp --icmp-type 0 -j ACCEPT
+          -A INPUT -p icmp -m icmp --icmp-type 3 -j ACCEPT
+          -A INPUT -p icmp -m icmp --icmp-type 11 -j ACCEPT
+          COMMIT
+
+      # Configure custom .vimrc
+    - path: /home/dev/.vimrc
+      filesystem: root
+      user:
+        name: dev
+      group:
+        name: users
+      mode: 0644
+      contents:
+        inline: |
+          "" CUSTOM VIM CONFIG
+          " filetype plugin indent on
+          " syntax on
+
+          "" General
+          set number        " Show line numbers
+          set wrap
+          set wrapmargin=0
+          set linebreak     " Break lines at word (requires Wrap lines)
+          set nolist
+          set showbreak=+++ " Wrap-broken line prefix
+          set textwidth=0   " Line wrap (number of cols)
+          set showmatch     " Highlight matching brace
+          set errorbells    " Beep or flash screen on errors
+
+          set hlsearch      " Highlight all search results
+          set smartcase     " Enable smart-case search
+          set ignorecase    " Always case-insensitive
+          set incsearch     " Searches for strings incrementally
+
+          set autoindent    " Auto-indent new lines
+          set shiftwidth=4  " Number of auto-indent spaces
+          set smartindent   " Enable smart-indent
+          set smarttab		" Enable smart-tabs
+          set softtabstop=4	" Number of spaces per Tab
+
+          "" Advanced
+          set ruler	        " Show row and column ruler information
+          set undolevels=1000               " Number of undo levels
+          set backspace=indent,eol,start    " Backspace behaviour
+
+    # Configure .bashrc and .bash_aliases
+    - path: /home/dev/.bashrc
+      filesystem: root
+      user:
+        name: dev
+      group:
+        name: users
+      mode: 0644
+      contents:
+        inline: |
+          # Test for an interactive shell.
+          if [[ $- != *i* ]] ; then
+                  # Shell is non-interactive.  Be done now!
+                  return
+          fi
+
+          # Prioritize /opt/bin in PATH
+          PATH="/opt/bin:$PATH"
+
+          # Import custom aliases
+          if [ -f ~/.bash_aliases ]; then . ~/.bash_aliases; fi
+
+          # Enable custom colors and styling
+          export CLICOLOR=1
+          export color_prompt=yes
+
+          # Customize PS1
+          PS1='\[\e[1;36m\]\u@\h\[\e[21m\]:\[\e[0;22m\]\w\[\e[0;1m\]\$\[\e[22m\] '
+    - path: /home/dev/.bash_aliases
+      filesystem: root
+      user:
+        name: dev
+      group:
+        name: users
+      mode: 0644
+      contents:
+        inline: |
+          #!/bin/bash
+
+          ## Git:
+          # git-stat -> git status
+          alias git-stat="git status"
+
+          # git-co -> git checkout
+          alias git-co="git checkout"
+
+          # git-br -> get name of current Git branch
+          alias git-br="git branch | grep -e "^*" | cut -d' ' -f 2"
+
+          # git-discard -> discard local changes in favor of remote data
+          alias git-discard="git fetch --all && git reset --hard @{u}"
+
+          ## Docker:
+          # docker-prunei -> prunes docker images
+          alias docker-prunei="docker image prune"
+
+          # docker-prune -> docker container prune
+          alias docker-prune="docker container prune"
+
+          ## List:
+          # ll -> show owner and permissions for a file/dir
+          if [[ $(type -t ll) == "" ]]; then alias ll="ls -l"; fi
+
+          # la -> list all files (including hidden)
+          if [[ $(type -t la) == "" ]]; then alias la="ls -a"; fi
+
+systemd:
+  units:
+      # Enable autoloading of iptables
+    - name: iptables-restore.service
+      enabled: true
+      # Install docker-compose
+    - name: docker-compose-installer.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Docker Compose installer
+        After=system-networkd.service
+        Requires=system-networkd.service
+        ConditionPathExists=!/opt/bin/docker-compose
+        [Service]
+        Type=oneshot
+        ExecStartPre=-/bin/mkdir /opt /opt/bin
+        ExecStart=/bin/curl -o /opt/bin/docker-compose \
+                            -L https://github.com/docker/compose/releases/download/1.21.2/docker-compose-Linux-x86_64
+        ExecStartPost=/bin/chmod +x /opt/bin/docker-compose
+
+        [Install]
+        WantedBy=multi-user.target
+
+
+update:
+  group: "beta"
+  server: "https://public.update.core-os.net/v1/update/"

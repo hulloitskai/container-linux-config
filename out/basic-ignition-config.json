@@ -1,12 +1,6 @@
 {
   "ignition": {
-    "config": {
-      "replace": {
-        "source":
-          "https://raw.githubusercontent.com/steven-xie/container-linux-config/master/out/ignition-config.json",
-        "verification": {}
-      }
-    },
+    "config": {},
     "timeouts": {
       "httpResponseHeaders": 10,
       "httpTotal": 30
@@ -19,8 +13,6 @@
       {
         "groups": ["sudo", "docker"],
         "name": "dev",
-        "passwordHash":
-          "$6$rounds=8192$HFQfsOK6siMlQ$rCYooCVQ/czao7YNidDDIIWWmIMe7QtW7rq1HJUXC0BWDmeepjzV/.gTiM.ElD3yV2e7kGf.9aF3KnGdPMzoB.",
         "primaryGroup": "users",
         "sshAuthorizedKeys": [
           "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL6DIQ+E+sAaDni3VJlnxDJp6LF0s1r6SmbU6P1YMHtQ stevenxie"
@@ -70,12 +62,6 @@
   },
   "systemd": {
     "units": [
-      {
-        "contents":
-          "[Unit]\nDescription=Docker Compose installer\nAfter=system-networkd.service\nRequires=system-networkd.service\nConditionPathExists=!/opt/bin/docker-compose\n\n[Service]\nType=oneshot\nExecStartPre=-/bin/mkdir /opt \u0026\u0026 /bin/mkdir /opt/bin\nExecStart=/bin/curl -o /opt/bin/docker-compose \\\n                    -L https://github.com/docker/compose/releases/download/1.21.2/docker-compose-Linux-x86_64\nExecStartPost=/bin/chmod +x /opt/bin/docker-compose\n\n[Install]\nWantedBy=multi-user.target\n",
-        "enabled": true,
-        "name": "docker-compose-installer.service"
-      },
       {
         "enabled": true,
         "name": "iptables-restore.service"

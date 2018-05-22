@@ -1,6 +1,6 @@
 {
   "name": "container-linux-config",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "A basic Container Linux / Ignition configuration for CoreOS, and related distros.",
   "homepage": "https://github.com/steven-xie/container-linux-config",
   "repository": "git@github.com:steven-xie/container-linux-config",
@@ -11,10 +11,16 @@
   "license": "MIT",
   "author": "Steven Xie <hello@stevenxie.me>",
   "private": false,
+  "config": {
+    "platform": "digitalocean"
+  },
   "scripts": {
-    "make": "yarn mk-config && yarn prettier",
-    "mk-config":
-      "./tools/ct -pretty -strict -platform digitalocean -in-file src/container-linux-config.yml -out-file out/ignition-config.json",
+    "make": "npm run make-basic",
+    "make-basic": "npm run gen-basic-config && npm run prettier",
+    "make-full": "npm run gen-full-config && npm run prettier",
+    "gen-config": "npm run gen-basic-config",
+    "gen-basic-config": "MODE=basic ./Scripts/gen-config.sh",
+    "gen-full-config": "MODE=full ./Scripts/gen-config.sh",
     "prettier": "prettier --write **/*.json"
   },
   "devDependencies": {

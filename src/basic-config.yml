@@ -1,9 +1,7 @@
 # container-linux-config
 
 ignition:
-  config:
-    replace:
-      source: https://raw.githubusercontent.com/steven-xie/container-linux-config/master/out/ignition-config.json
+  # Prevent infinite HTTP(s) resource loading
   timeouts:
     http_response_headers: 10
     http_total: 30
@@ -11,7 +9,6 @@ ignition:
 passwd:
   users:
     - name: dev
-      password_hash: $6$rounds=8192$HFQfsOK6siMlQ$rCYooCVQ/czao7YNidDDIIWWmIMe7QtW7rq1HJUXC0BWDmeepjzV/.gTiM.ElD3yV2e7kGf.9aF3KnGdPMzoB.
       primary_group: users
       groups: [ sudo, docker ]
       ssh_authorized_keys:
@@ -19,6 +16,7 @@ passwd:
 
 storage:
   files:
+      # Configure `sshd`, prevent password authentication
     - path: /etc/ssh/sshd_config
       filesystem: root
       mode: 0600
@@ -34,6 +32,8 @@ storage:
           AllowUsers core dev
           AuthenticationMethods publickey
           PrintMotd no
+
+      # Restrict networking to :443, :80, :22, and internal ports
     - path: /var/lib/iptables/rules-save
       filesystem: root
       mode: 0644
@@ -56,24 +56,7 @@ storage:
 
 systemd:
   units:
-    - name: docker-compose-installer.service
-      enabled: true
-      contents: |
-        [Unit]
-        Description=Docker Compose installer
-        After=system-networkd.service
-        Requires=system-networkd.service
-        ConditionPathExists=!/opt/bin/docker-compose
-
-        [Service]
-        Type=oneshot
-        ExecStartPre=-/bin/mkdir /opt && /bin/mkdir /opt/bin
-        ExecStart=/bin/curl -o /opt/bin/docker-compose \
-                            -L https://github.com/docker/compose/releases/download/1.21.2/docker-compose-Linux-x86_64
-        ExecStartPost=/bin/chmod +x /opt/bin/docker-compose
-
-        [Install]
-        WantedBy=multi-user.target
+      # Enable autoloading of iptables
     - name: iptables-restore.service
       enabled: true
 
