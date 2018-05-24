@@ -6,13 +6,15 @@ ignition:
     http_response_headers: 10
     http_total: 30
 
+
 passwd:
   users:
     - name: dev
       primary_group: users
-      groups: [ sudo, docker ]
+      groups: [ sudo, docker, systemd-config ]
       ssh_authorized_keys:
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL6DIQ+E+sAaDni3VJlnxDJp6LF0s1r6SmbU6P1YMHtQ stevenxie
+
 
 storage:
   files:
@@ -54,12 +56,18 @@ storage:
           -A INPUT -p icmp -m icmp --icmp-type 11 -j ACCEPT
           COMMIT
 
+
 systemd:
   units:
       # Enable autoloading of iptables
     - name: iptables-restore.service
       enabled: true
 
+
 update:
   group: "beta"
   server: "https://public.update.core-os.net/v1/update/"
+
+# Until 'etcd' is configured, do not automatically reboot upon updates
+locksmith:
+  reboot_strategy: "off"

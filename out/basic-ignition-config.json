@@ -11,7 +11,7 @@
   "passwd": {
     "users": [
       {
-        "groups": ["sudo", "docker"],
+        "groups": ["sudo", "docker", "systemd-config"],
         "name": "dev",
         "primaryGroup": "users",
         "sshAuthorizedKeys": [
@@ -53,7 +53,7 @@
         "user": {},
         "contents": {
           "source":
-            "data:,GROUP%3Dbeta%0ASERVER%3Dhttps%3A%2F%2Fpublic.update.core-os.net%2Fv1%2Fupdate%2F",
+            "data:,GROUP%3Dbeta%0ASERVER%3Dhttps%3A%2F%2Fpublic.update.core-os.net%2Fv1%2Fupdate%2F%0AREBOOT_STRATEGY%3D%22off%22",
           "verification": {}
         },
         "mode": 420
